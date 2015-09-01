@@ -11,6 +11,7 @@ def createList(*values):
 		output.extend([i])
 	return output;
 def incrementWhatever(value):
+	""" increment value by 1. If it refuses, we do it anyways"""
 	try:
 		output = value + 1;
 		return output;
