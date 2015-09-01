@@ -41,5 +41,6 @@ def main():
 		window.display() 
 		## update the window
 
-init();
-main();
+if (__name__ == "__main__"):
+	init();
+	main();
