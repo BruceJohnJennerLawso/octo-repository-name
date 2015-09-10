@@ -1,7 +1,7 @@
 ## poly.py #####################################################################
 ################################################################################
 
-class Pet:
+class Pet(object):
 	def __init__(self, name, species):
 		self.Name = name
 		self.Species = species
@@ -12,16 +12,19 @@ class Pet:
 		
 class Dog(Pet):
 	def __init__(self, name, breed):
-		self.Species = "Dog"
-		self.Name = name
+		super(Dog,self).__init__(name, "Dog")
 		self.Breed = breed
 		
 	def getBreed(self):
 		return self.Breed
 		
+class Schnauzer(Dog):
+	def __init__(self, name):
+		super(Schnauzer,self).__init__(name, "Schnauzer")
+		
 		
 if (__name__=="__main__"):
-	Bailey = Dog("Bailey", "Schnauzer")
+	Bailey = Schnauzer("Bailey")
 	print Bailey.getName()
 	print Bailey.getSpecies()
 	print Bailey.getBreed()	

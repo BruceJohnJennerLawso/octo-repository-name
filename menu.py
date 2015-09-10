@@ -1,7 +1,7 @@
 ## menu.py #####################################################################
 ## cmd-- in a way better language ##############################################
 ################################################################################
-
+import sys
 
 def caseInsensitiveMatch(str1, str2):
 	if(str1.lower() == str2.lower()):
@@ -9,14 +9,21 @@ def caseInsensitiveMatch(str1, str2):
 	else:
 		return False;
 
-class menuAction:
+def foo():
+	print "foo";
 	
-	def __init__(self, stuff):
-		
-		## something to the effect of storing a function pointer or whatever
-		
-		return
+def bar():
+	print "bar";
 
+class menuFunction:
+	def __init__(self, input_function):
+		## something to the effect of storing a function pointer or whatever
+		self.function = input_function;
+		return
+	def execute():
+		self.function()
+		
+		
 class dynMenu:
 	
 	def __init__(self, name, access):
@@ -27,38 +34,27 @@ class dynMenu:
 		## just something to id the object by
 		self.linksUp = [];
 		self.linksDown = [];
+		self.functions = [];
 		return
 		
 		
 	def Menu(self, lastInput):
+		self.menuTitle(True);
 		while (True):
 		## a little bit ugly, but when its all said & done, it works
 			i = "not q"
-			self.menuTitle();
 			i = raw_input("#: ");
 			## request input from the user, and lets get started...
+			for cy in i.split(" "):
+				print cy;
 			if((i == "q")or(i == "Q")):
 				return "q";
 			elif((i == "h")or(i == "H")):
 				self.Help();
 			elif(caseInsensitiveMatch(i, "ls") == True):
-				## some sort of if statement here depending on whether there
-				## actually is anything above
-				print "\n"
-				#for up in self.linksUp:
-				#	print ("%s: %s" % (up.Name, up.Access));
-				self.printUpLinks(0);
-				print "%s: %s" % (self.Name, self.Access);
-				##for down in self.linksDown:
-				##	print "%s: %s" % (down.Name, down.Access);
-				self.printDownLinks(0);
-				
-					
-				## got an idea for a sort of nested thing, like
-				## ->
-				##   ->
-				##   ->
-			else:
+				self.lsStructure(0);	
+			elif (caseInsensitiveMatch(i.split(" ")[0], "cd")):
+				i = i.split(" ")[1];
 				foundHit = False;
 				for up in self.linksUp:
 					if(caseInsensitiveMatch(up.Access, i) == True):
@@ -90,10 +86,13 @@ class dynMenu:
 		## assign some new name to the object so we can test things
 		return
 	
-	def menuTitle(self):
+	def menuTitle(self, scrub):
+		if(scrub == True):
+			sys.stdout.write("\x1b[2J\x1b[H");
 		print "\n==" + self.Name + "==";
 		return
 		
+	# attach links above and below	
 	def linkUpTo(self, target):
 		self.linksUp.append(target);
 		return
@@ -101,62 +100,55 @@ class dynMenu:
 	def linkDownTo(self, target):
 		self.linksDown.append(target);
 		return		
-		
+	# attach a submenu and tell the submenu to link itself to you as well	
 	def attachSubMenu(self, target):
 		self.linkDownTo(target);
 		target.linkUpTo(self);
 		return
-		
+	# attach self below a parent menu
 	def attachParentMenu(self, target):
 		self.linkUpTo(target);
 		target.linkDownTo(self);
 		return
-	
-	def goAbove(self, scope):
-		if(len(self.linksUp) > 0):	
-			for up in self.linksUp:
-				##print "continuing up scope tree with scope %i" % scope;
-				up.goAbove(scope + 1);
-		else:
-			##print "Reached top of scope tree"
-			self.printTopLinks(scope);
-		return
-	
-	def getUpLink(self, scope):
-		upList = [];
-		
-		for up in self.linksUp:
-			upList.append((scope*"  ") + "->%s: %s" % (up.Name, up.Access))
-			if(len(up.linksUp) > 0):
-				aboveList = up.getUpLink(scope+1);
-				for cy in range(0, len(aboveList)):
-					upList.insert(0, aboveList[cy]);
-				##upList.insert(0, up.getUpLink(scope+1));
-			
-		return upList;
 
 	
-	def printUpLinks(self, scope):
-		##for up in self.linksUp:
-			##self.goAbove(0);	
-		output = self.getUpLink(scope);
-		for cy in range(1, len(output)):
-			print output[cy];
-		return
+	def lsStructure(self, scope):
+		print "\n"
+		self.printUpLinks(scope+1);
+		print "%s: %s" % (self.Name, self.Access);
+		self.printDownLinks(scope+1);
+		return;
+	
+	# list menus below the current menu
+	def getDownLink(self, scope):
+		output = [];
+		for down in self.linksDown:
+			output.append( (scope*"  ") + "%s: %s" % (down.Name, down.Access) );
+			output.extend( down.getDownLink(scope+1) );
 			
+		return output;
 	
 	def printDownLinks(self, scope):
-		for down in self.linksDown:
-			print (scope*"  ") + "->%s: %s" % (down.Name, down.Access);
-			down.printDownLinks(scope + 1);
+		output = []
+		output = self.getDownLink(scope+1);
+		for i in output:
+			print i;
 		return
 		
-	def printTopLinks(self, scope):
-		if(scope > 0):
-			for down in self.linksDown:
-				print (scope*"  ") + "->%s: %s" % (down.Name, down.Access);
-				down.printDownLinks(scope - 1);
-		return
+	# list menus above the current menu	
+	def getUpLink(self, scope):
+		output = []
+		for up in self.linksUp:
+			output.append( (scope*"  ") + "%s: %s" % (up.Name, up.Access) );
+			output.extend(up.getUpLink(scope + 1));
+		return output;	
+		
+	def printUpLinks(self, scope):
+		output = [];
+		output = self.getUpLink(scope +1);
+		for i in reversed(output):
+			print i;
+		return;
 		
 			
 	
@@ -175,5 +167,6 @@ def main():
 	
 	return
 	
-main();
+if (__name__ == "__main__"):	
+	main();
 		
