@@ -12,15 +12,25 @@ def caseInsensitiveMatch(str1, str2):
 def foo():
 	print "foo";
 	
-def bar():
-	print "bar";
+def bar(*times):
+	for n in times:
+		print "bar"*n;
 
 class menuFunction:
-	def __init__(self, input_function):
+	def __init__(self, input_function, help_string, id_string):
 		## something to the effect of storing a function pointer or whatever
 		self.function = input_function;
+		self.helpString = help_string
+		self.idString = id_string
 		return
-	def execute():
+	
+	def getIdString(self):
+		return self.idString
+		
+	def getHelpString(Self):
+		return self.helpString	
+	
+	def execute(self):
 		self.function()
 		
 		
@@ -34,7 +44,7 @@ class dynMenu:
 		## just something to id the object by
 		self.linksUp = [];
 		self.linksDown = [];
-		self.functions = [];
+		self.Functions = [];
 		return
 		
 		
@@ -55,7 +65,6 @@ class dynMenu:
 				self.lsStructure(0);	
 			elif (caseInsensitiveMatch(i.split(" ")[0], "cd")):
 				i = i.split(" ")[1];
-				foundHit = False;
 				for up in self.linksUp:
 					if(caseInsensitiveMatch(up.Access, i) == True):
 						if((up.Menu(i)) == "q"):
@@ -70,6 +79,12 @@ class dynMenu:
 						else:
 							foundHit = True;
 							break;			
+			else:
+				foundHit = False;
+				for func in self.Functions:
+					if(caseInsensitiveMatch(func.getIdString(), i)):
+						foundHit = True
+						func.execute()
 				if(foundHit == False):
 					print "%s not found, please try again" % i;		
 		
@@ -106,6 +121,10 @@ class dynMenu:
 		target.linkUpTo(self);
 		return
 	# attach self below a parent menu
+	
+	def attachFunction(self, fx, help_string, id_string):
+		self.Functions.insert(0, menuFunction(fx, help_string, id_string))
+	
 	def attachParentMenu(self, target):
 		self.linkUpTo(target);
 		target.linkDownTo(self);
@@ -153,6 +172,7 @@ class dynMenu:
 			
 	
 def main():
+	
 	mainMenu = dynMenu("Main Menu", "m");
 	chain = dynMenu("Intermediate Menu", "i");
 	sub1 = dynMenu("Menu One", "one");
@@ -160,6 +180,8 @@ def main():
 	sub3 = dynMenu("Menu Three", "three");
 	mainMenu.attachSubMenu(chain);
 	chain.attachSubMenu(sub1);
+	sub1.attachFunction(foo, "prints out foo to the console, very useful", "foo")
+	sub1.attachFunction(bar, "prints out bar to the console n times, very useful", "foo")
 	chain.attachSubMenu(sub2);	
 	chain.attachSubMenu(sub3);
 	sub3.attachParentMenu(mainMenu);
